@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#0B1121" />
+  <defs>
+    <linearGradient id="shamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A90E2" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#D97706" />
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="190" stroke="url(#shamGrad)" stroke-width="8" fill="none" opacity="0.4" />
+  <circle cx="256" cy="256" r="160" fill="#111B33" stroke="#4A90E2" stroke-width="4" />
+  <!-- Syrian Eagle Emblem Silhouette / Wing shape -->
+  <path d="M 256 140 L 290 200 L 370 210 L 310 260 L 330 340 L 256 300 L 182 340 L 202 260 L 142 210 L 222 200 Z" fill="url(#goldGrad)" opacity="0.9" />
+  <!-- Stars -->
+  <polygon points="230,230 236,248 254,248 240,258 245,276 230,266 215,276 220,258 206,248 224,248" fill="#10B981" />
+  <polygon points="282,230 288,248 306,248 292,258 297,276 282,266 267,276 272,258 258,248 276,248" fill="#10B981" />
+  <!-- Sham Text -->
+  <text x="256" y="390" font-family="'Cairo', sans-serif" font-weight="bold" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">شام كاش</text>
+  <text x="256" y="420" font-family="'Cairo', sans-serif" font-weight="600" font-size="16" fill="#4A90E2" text-anchor="middle" letter-spacing="4">SHAMCHAS</text>
+</svg>

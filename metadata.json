@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix shamchas",
+  "description": "بوابة توثيق حسابات وتصريف العملات الإلكترونية shamchas شام كاش في سوريا",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
