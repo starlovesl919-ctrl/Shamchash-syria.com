@@ -1348,6 +1348,7 @@ const INITIAL_NOTIFICATIONS: AppNotification[] = [
 const DEFAULT_SECURITY: SecuritySettings = {
   pin: '1234',
   biometricEnabled: true,
+  biometricType: 'faceid',
   dailyLimitSYP: 35000000,
   isCardFrozen: false,
   smsAlerts: true,

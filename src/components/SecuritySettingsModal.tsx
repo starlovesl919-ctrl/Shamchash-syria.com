@@ -9,7 +9,9 @@ import {
   Check,
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  ScanFace,
+  Fingerprint
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import {
@@ -54,8 +56,29 @@ export const SecuritySettingsModal: React.FC<SecuritySettingsModalProps> = ({
   };
 
   const handleToggleBiometric = () => {
-    const updated = updateSecuritySettings({ biometricEnabled: !settings.biometricEnabled });
+    const nextState = !settings.biometricEnabled;
+    const updated = updateSecuritySettings({ biometricEnabled: nextState });
     setSettings(updated);
+    logUserActivity(
+      nextState ? 'تفعيل القفل البيومتري عند التصغير' : 'إيقاف القفل البيومتري',
+      nextState
+        ? 'تم تفعيل طلب البصمة أو بصمة الوجه تلقائياً عند تصغير التطبيق'
+        : 'تم تعطيل القفل البيومتري التلقائي'
+    );
+  };
+
+  const handleSelectBiometricType = (biometricType: 'faceid' | 'fingerprint') => {
+    const updated = updateSecuritySettings({ biometricType });
+    setSettings(updated);
+    logUserActivity(
+      'تحديد نوع المصادقة البيومترية',
+      biometricType === 'faceid' ? 'تم اختيار بصمة الوجه (Face ID)' : 'تم اختيار بصمة الإصبع (Touch ID)'
+    );
+  };
+
+  const handleLockSessionNow = () => {
+    onClose();
+    window.dispatchEvent(new CustomEvent('sc_lock_session_now'));
   };
 
   const handleToggleCardFreeze = () => {
@@ -193,26 +216,75 @@ export const SecuritySettingsModal: React.FC<SecuritySettingsModalProps> = ({
             </div>
           </form>
 
-          {/* Biometric Toggle */}
-          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-3.5">
-            <div className="flex items-center gap-2">
-              <Smartphone className="size-4 text-emerald-400" />
-              <div>
-                <span className="text-xs font-bold text-white block">تسجيل الدخول بالبصمة البيومترية</span>
-                <span className="text-[10px] text-white/50 block">FaceID / TouchID للمصادقة الفورية</span>
+          {/* Biometric Toggle & Method Selector */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Smartphone className="size-4 text-emerald-400 shrink-0" />
+                <div>
+                  <span className="text-xs font-bold text-white block">
+                    {isRTL ? 'القفل البيومتري عند تصغير التطبيق' : 'Biometric Lock on Minimize'}
+                  </span>
+                  <span className="text-[10px] text-white/50 block">
+                    {isRTL
+                      ? 'طلب Face ID أو بصمة الإصبع عند العودة للجلسة'
+                      : 'Require Face ID / Fingerprint when returning'}
+                  </span>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={handleToggleBiometric}
+                aria-label={isRTL ? 'تبديل القفل البيومتري' : 'Toggle biometric lock'}
+                className={`size-7 shrink-0 rounded-full border transition flex items-center justify-center cursor-pointer ${
+                  settings.biometricEnabled
+                    ? 'bg-emerald-500 border-emerald-400 text-white'
+                    : 'bg-white/10 border-white/20'
+                }`}
+              >
+                {settings.biometricEnabled && <Check className="size-4" />}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleToggleBiometric}
-              className={`size-6 rounded-full border transition flex items-center justify-center cursor-pointer ${
-                settings.biometricEnabled
-                  ? 'bg-emerald-500 border-emerald-400 text-white'
-                  : 'bg-white/10 border-white/20'
-              }`}
-            >
-              {settings.biometricEnabled && <Check className="size-3.5" />}
-            </button>
+
+            {settings.biometricEnabled && (
+              <div className="pt-2 border-t border-white/10 space-y-2.5">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectBiometricType('faceid')}
+                    className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-[11px] font-bold transition cursor-pointer whitespace-nowrap ${
+                      (settings.biometricType || 'faceid') === 'faceid'
+                        ? 'border-blue-400/60 bg-blue-500/20 text-blue-200'
+                        : 'border-white/10 bg-white/5 text-white/65 hover:bg-white/10'
+                    }`}
+                  >
+                    <ScanFace className="size-3.5 shrink-0" />
+                    <span>{isRTL ? 'بصمة الوجه (Face ID)' : 'Face ID'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectBiometricType('fingerprint')}
+                    className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-[11px] font-bold transition cursor-pointer whitespace-nowrap ${
+                      settings.biometricType === 'fingerprint'
+                        ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-200'
+                        : 'border-white/10 bg-white/5 text-white/65 hover:bg-white/10'
+                    }`}
+                  >
+                    <Fingerprint className="size-3.5 shrink-0" />
+                    <span>{isRTL ? 'بصمة الإصبع' : 'Fingerprint'}</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLockSessionNow}
+                  className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border border-blue-400/30 bg-blue-500/15 hover:bg-blue-500/25 px-3 py-2 text-[11px] font-bold text-blue-200 transition cursor-pointer whitespace-nowrap"
+                >
+                  <Lock className="size-3.5 shrink-0" />
+                  <span>{isRTL ? 'قفل الجلسة الآن (اختبار المصادقة البيومترية)' : 'Lock Session Now (Test Biometric)'}</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Daily Limit Picker */}

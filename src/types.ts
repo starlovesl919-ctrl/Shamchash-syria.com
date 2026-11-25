@@ -99,6 +99,7 @@ export interface BranchLocation {
 export interface SecuritySettings {
   pin: string;
   biometricEnabled: boolean;
+  biometricType?: 'faceid' | 'fingerprint';
   dailyLimitSYP: number;
   isCardFrozen: boolean;
   smsAlerts: boolean;

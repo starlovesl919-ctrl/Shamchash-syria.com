@@ -63,3 +63,29 @@
     transform: none;
   }
 }
+
+@keyframes biometric-scan {
+  0% {
+    transform: translateY(-28px);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(28px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-28px);
+    opacity: 0.25;
+  }
+}
+
+.animate-biometric-scan {
+  animation: biometric-scan 1.35s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-biometric-scan,
+  .panel-glass {
+    animation: none !important;
+  }
+}

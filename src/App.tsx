@@ -14,11 +14,13 @@ import { CurrencySwapModal } from './components/CurrencySwapModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { AppSplashScreen } from './components/AppSplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { BiometricLockOverlay } from './components/BiometricLockOverlay';
 import { ScreenType, RequestType, ContactData, AuthData, AccountRecord } from './types';
 import {
   getSavedAccounts,
   saveAccountRecord,
-  logUserActivity
+  logUserActivity,
+  getSecuritySettings
 } from './utils/accountStorage';
 
 export default function App() {
@@ -51,6 +53,11 @@ export default function App() {
     () => localStorage.getItem('sc_request_id') || 'SC-104288'
   );
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isBiometricLocked, setIsBiometricLocked] = useState(false);
+  const [biometricLockReason, setBiometricLockReason] = useState<'minimized' | 'manual'>('minimized');
+  const [biometricEnabled, setBiometricEnabled] = useState<boolean>(
+    () => getSecuritySettings().biometricEnabled
+  );
 
   // Sync saved accounts state across tabs or components
   useEffect(() => {
@@ -75,6 +82,50 @@ export default function App() {
       setRequestType('login');
     }
   }, [isAuthenticated, currentScreen]);
+
+  // Keep biometricEnabled synced with SecuritySettingsModal changes
+  useEffect(() => {
+    const handleSecuritySync = () => {
+      setBiometricEnabled(getSecuritySettings().biometricEnabled);
+    };
+    window.addEventListener('sc_security_updated', handleSecuritySync);
+    return () => window.removeEventListener('sc_security_updated', handleSecuritySync);
+  }, []);
+
+  // Lock session automatically when the app is minimized/backgrounded, or triggered manually
+  useEffect(() => {
+    if (!isAuthenticated || currentScreen === 'auth' || !biometricEnabled) {
+      setIsBiometricLocked(false);
+      return;
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        setBiometricLockReason('minimized');
+        setIsBiometricLocked(true);
+      }
+    };
+
+    const handlePageHide = () => {
+      setBiometricLockReason('minimized');
+      setIsBiometricLocked(true);
+    };
+
+    const handleManualLock = () => {
+      setBiometricLockReason('manual');
+      setIsBiometricLocked(true);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('sc_lock_session_now', handleManualLock);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('sc_lock_session_now', handleManualLock);
+    };
+  }, [isAuthenticated, currentScreen, biometricEnabled]);
 
   const handleStartFlow = (type: RequestType) => {
     setRequestType(type);
@@ -329,6 +380,14 @@ export default function App() {
         onOpenHome={isAuthenticated ? () => setCurrentScreen('home') : undefined}
         currentUserEmail={authData.email || undefined}
         onLogout={handleLogout}
+        onLockSession={
+          isAuthenticated && biometricEnabled
+            ? () => {
+                setBiometricLockReason('manual');
+                setIsBiometricLocked(true);
+              }
+            : undefined
+        }
         onOpenLogin={handleOpenLogin}
       >
         {currentScreen === 'home' && (
@@ -476,6 +535,19 @@ export default function App() {
 
       {/* Offline Status Connectivity Banner */}
       <OfflineIndicator />
+
+      {/* Biometric Session Re-Entry Lock (when minimized or manually locked) */}
+      <BiometricLockOverlay
+        isOpen={isBiometricLocked && isAuthenticated && currentScreen !== 'auth'}
+        userEmail={authData.email}
+        userName={contactData.fullName}
+        lockReason={biometricLockReason}
+        onUnlock={() => setIsBiometricLocked(false)}
+        onSignOut={() => {
+          setIsBiometricLocked(false);
+          confirmLogout();
+        }}
+      />
 
       {/* Native App Launch Splash Screen */}
       {showSplash && <AppSplashScreen onDismiss={handleDismissSplash} />}

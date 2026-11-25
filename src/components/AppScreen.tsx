@@ -13,7 +13,8 @@ import {
   Home,
   LogOut,
   UserCheck,
-  LogIn
+  LogIn,
+  Lock
 } from 'lucide-react';
 import { WaveBackground } from './WaveBackground';
 import { useLanguage } from '../context/LanguageContext';
@@ -34,6 +35,7 @@ interface AppScreenProps {
   onOpenHome?: () => void;
   currentUserEmail?: string;
   onLogout?: () => void;
+  onLockSession?: () => void;
   onOpenLogin?: () => void;
   hideHeaderLogo?: boolean;
 }
@@ -53,6 +55,7 @@ export const AppScreen: React.FC<AppScreenProps> = ({
   onOpenHome,
   currentUserEmail,
   onLogout,
+  onLockSession,
   onOpenLogin,
   hideHeaderLogo = false,
 }) => {
@@ -282,11 +285,22 @@ export const AppScreen: React.FC<AppScreenProps> = ({
             <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] text-amber-200">
               <UserCheck className="size-3 text-amber-400" />
               <span dir="ltr" className="font-mono text-[10px] max-w-[130px] truncate">{currentUserEmail}</span>
+              {onLockSession && (
+                <button
+                  type="button"
+                  onClick={onLockSession}
+                  title={isRTL ? 'قفل الجلسة بالبصمة' : 'Lock Session'}
+                  className="rounded-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 px-2 py-0.5 text-[10px] font-bold transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
+                >
+                  <Lock className="size-2.5" />
+                  <span>{isRTL ? 'قفل' : 'Lock'}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onLogout}
                 title={t.navLogout}
-                className="rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 px-2 py-0.5 text-[10px] font-bold transition cursor-pointer inline-flex items-center gap-1"
+                className="rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 px-2 py-0.5 text-[10px] font-bold transition cursor-pointer inline-flex items-center gap-1 whitespace-nowrap"
               >
                 <LogOut className="size-2.5" />
                 <span>{t.navLogout}</span>
